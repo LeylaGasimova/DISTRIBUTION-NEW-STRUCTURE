@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Реструктуризация департамента</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper: #EEF1EF;
+    --surface: #FFFFFF;
+    --surface-sunk: #E4E8E5;
+    --ink: #13181A;
+    --ink-soft: #5B6360;
+    --ink-faint: #8B948F;
+    --line: #D7DCD8;
+
+    --accent: #1F5C52;      /* KAM / департамент дистрибуции */
+    --accent-ink: #F4FBF8;
+    --c-brand: #7A4FA0;     /* категорийный / бренд-менеджмент */
+    --c-demand: #B8862C;    /* demand planning */
+    --c-supply: #2E6E9E;    /* stock control & replenishment */
+    --c-corp: #A6435A;      /* корпоративные продажи */
+    --c-store: #5C7A29;     /* VM / сейлс-консультант на точке */
+
+    --status-bg: #FBF0DB;
+    --status-border: #E3B968;
+    --status-ink: #7A5613;
+
+    --font-display: "Century Gothic", "Jost", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Century Gothic", "Jost", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14181A;
+      --surface: #1B2022;
+      --surface-sunk: #101314;
+      --ink: #ECEFEC;
+      --ink-soft: #9FA9A4;
+      --ink-faint: #6C7672;
+      --line: #2B3234;
+
+      --accent: #6FD6BE;
+      --accent-ink: #0B1513;
+      --c-brand: #C29FE3;
+      --c-demand: #E0B25C;
+      --c-supply: #86BDEA;
+      --c-corp: #E38FA0;
+      --c-store: #A8C97A;
+
+      --status-bg: #3A2E12;
+      --status-border: #8A6A2A;
+      --status-ink: #F0C878;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #14181A;
+    --surface: #1B2022;
+    --surface-sunk: #101314;
+    --ink: #ECEFEC;
+    --ink-soft: #9FA9A4;
+    --ink-faint: #6C7672;
+    --line: #2B3234;
+
+    --accent: #6FD6BE;
+    --accent-ink: #0B1513;
+    --c-brand: #C29FE3;
+    --c-demand: #E0B25C;
+    --c-supply: #86BDEA;
+    --c-corp: #E38FA0;
+    --c-store: #A8C97A;
+
+    --status-bg: #3A2E12;
+    --status-border: #8A6A2A;
+    --status-ink: #F0C878;
+  }
+
+  * { box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 clamp(18px, 4vw, 32px) 64px;
+  }
+
+  a { color: inherit; }
+
+  h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+
+  /* ---------- Quick nav ---------- */
+
+  .quicknav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 14px clamp(18px, 4vw, 32px);
+    margin: 0 calc(-1 * clamp(18px, 4vw, 32px));
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .quicknav a {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: var(--ink-soft);
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    white-space: nowrap;
+  }
+
+  .quicknav a:hover, .quicknav a:focus-visible { color: var(--ink); border-color: var(--ink-faint); }
+
+  /* ---------- Header ---------- */
+
+  .hero { padding: 40px 0 36px; border-bottom: 1px solid var(--line); }
+
+  .top-note {
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.7rem, 4.4vw, 2.35rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin: 8px 0 0;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 16px 0 0;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--status-ink);
+    background: var(--status-bg);
+    border: 1px solid var(--status-border);
+  }
+
+  .status-badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--status-ink);
+    flex-shrink: 0;
+  }
+
+  .lede {
+    max-width: 64ch;
+    font-size: 1.02rem;
+    color: var(--ink-soft);
+    margin: 14px 0 0;
+  }
+
+  .proposal-block {
+    margin-top: 18px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    max-width: 68ch;
+  }
+
+  .proposal-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  .proposal-block ul {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .proposal-block ul li strong { font-weight: 600; }
+
+  .scheme figcaption .proposal-label { color: var(--ink-faint); margin: 0 0 8px; }
+
+  /* ---------- Problem blocks ---------- */
+
+  .problem-block {
+    background: color-mix(in srgb, var(--c) 7%, var(--surface));
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--c);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+
+  .problem-block .proposal-label { color: var(--c); }
+
+  .problem-block ul {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 0.92rem;
+    color: var(--ink);
+  }
+
+  .problem-block ul li::marker { color: var(--c); }
+
+  .scheme figcaption ul {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .scheme figcaption ul li strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- Scheme (diagram) ---------- */
+
+  .scheme-section { padding-top: 40px; scroll-margin-top: 70px; }
+
+  .scheme-section h2 { font-size: 1.4rem; font-weight: 600; margin-bottom: 18px; }
+
+  .lede-small { color: var(--ink-soft); font-size: 0.94rem; margin: 0 0 20px; max-width: 62ch; }
+
+  figure.scheme { margin: 0; }
+
+  .scheme svg {
+    width: 100%;
+    height: auto;
+    color: var(--ink);
+    display: block;
+  }
+
+  .scheme svg text { font-family: var(--font-body); }
+  .scheme svg text.mono { font-family: var(--font-mono); }
+
+  .scheme figcaption {
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    max-width: 68ch;
+  }
+
+  /* ---------- Diagram assembly animation ---------- */
+
+  @media (prefers-reduced-motion: no-preference) {
+    .scheme svg rect { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(0.94); }
+    .scheme svg text { opacity: 0; }
+    .scheme svg line { stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+
+    .scheme.in-view svg rect { animation: diagPop 0.5s cubic-bezier(.2,.7,.3,1) forwards; }
+    .scheme.in-view svg text { animation: diagFade 0.4s ease-out forwards; }
+    .scheme.in-view svg line { animation: diagDraw 0.55s ease-out forwards; }
+
+    .scheme svg rect:nth-of-type(1) { animation-delay: .05s }
+    .scheme svg rect:nth-of-type(2) { animation-delay: .12s }
+    .scheme svg rect:nth-of-type(3) { animation-delay: .19s }
+    .scheme svg rect:nth-of-type(4) { animation-delay: .26s }
+    .scheme svg rect:nth-of-type(5) { animation-delay: .33s }
+    .scheme svg rect:nth-of-type(6) { animation-delay: .40s }
+    .scheme svg rect:nth-of-type(7) { animation-delay: .47s }
+    .scheme svg rect:nth-of-type(8) { animation-delay: .54s }
+
+    .scheme svg line:nth-of-type(1) { animation-delay: .03s }
+    .scheme svg line:nth-of-type(2) { animation-delay: .07s }
+    .scheme svg line:nth-of-type(3) { animation-delay: .11s }
+    .scheme svg line:nth-of-type(4) { animation-delay: .15s }
+    .scheme svg line:nth-of-type(5) { animation-delay: .19s }
+    .scheme svg line:nth-of-type(6) { animation-delay: .23s }
+    .scheme svg line:nth-of-type(7) { animation-delay: .27s }
+    .scheme svg line:nth-of-type(8) { animation-delay: .31s }
+    .scheme svg line:nth-of-type(9) { animation-delay: .35s }
+    .scheme svg line:nth-of-type(10) { animation-delay: .39s }
+    .scheme svg line:nth-of-type(11) { animation-delay: .43s }
+    .scheme svg line:nth-of-type(12) { animation-delay: .47s }
+    .scheme svg line:nth-of-type(13) { animation-delay: .51s }
+    .scheme svg line:nth-of-type(14) { animation-delay: .55s }
+    .scheme svg line:nth-of-type(15) { animation-delay: .59s }
+    .scheme svg line:nth-of-type(16) { animation-delay: .63s }
+
+    .scheme svg text:nth-of-type(1) { animation-delay: .15s }
+    .scheme svg text:nth-of-type(2) { animation-delay: .20s }
+    .scheme svg text:nth-of-type(3) { animation-delay: .25s }
+    .scheme svg text:nth-of-type(4) { animation-delay: .30s }
+    .scheme svg text:nth-of-type(5) { animation-delay: .35s }
+    .scheme svg text:nth-of-type(6) { animation-delay: .40s }
+    .scheme svg text:nth-of-type(7) { animation-delay: .45s }
+    .scheme svg text:nth-of-type(8) { animation-delay: .50s }
+    .scheme svg text:nth-of-type(9) { animation-delay: .55s }
+    .scheme svg text:nth-of-type(10) { animation-delay: .60s }
+    .scheme svg text:nth-of-type(11) { animation-delay: .65s }
+    .scheme svg text:nth-of-type(12) { animation-delay: .70s }
+    .scheme svg text:nth-of-type(13) { animation-delay: .75s }
+    .scheme svg text:nth-of-type(14) { animation-delay: .80s }
+  }
+
+  @keyframes diagPop { to { opacity: 1; transform: scale(1); } }
+  @keyframes diagFade { to { opacity: 1; } }
+  @keyframes diagDraw { to { stroke-dashoffset: 0; } }
+
+  /* ---------- Legend ---------- */
+
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--ink-soft); }
+
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .legend-dot.shape-triangle { border-radius: 0; clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }
+  .legend-dot.shape-diamond { border-radius: 0; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+  .legend-dot.shape-circle { border-radius: 50%; }
+
+  /* ---------- Interaction loop ---------- */
+
+  .loop-heading {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 32px 0 14px;
+    scroll-margin-top: 70px;
+  }
+
+  .role-icon { width: 14px; height: 14px; flex-shrink: 0; color: var(--c); }
+
+  /* ---------- Job description cards ---------- */
+
+  .jd-section { padding-top: 44px; scroll-margin-top: 70px; }
+
+  .jd-section > h2 { font-size: 1.4rem; font-weight: 600; margin-bottom: 18px; }
+
+  .jd-section > .lede-small { color: var(--ink-soft); font-size: 0.94rem; margin: 0 0 20px; max-width: 62ch; }
+
+  .jd-card {
+    background: color-mix(in srgb, var(--c) 7%, var(--surface));
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--c);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    scroll-margin-top: 70px;
+  }
+
+  .jd-card summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .jd-card summary::-webkit-details-marker { display: none; }
+
+  .jd-dept {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--c);
+    flex-shrink: 0;
+    min-width: 9.5rem;
+  }
+
+  .jd-title { flex: 1; font-weight: 600; font-size: 1.02rem; }
+
+  .jd-chev {
+    font-family: var(--font-mono);
+    color: var(--ink-faint);
+    font-weight: 500;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .jd-card[open] .jd-chev { transform: rotate(45deg); }
+
+  .jd-body {
+    padding: 0 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    border-top: 1px solid var(--line);
+    margin-top: -1px;
+    padding-top: 18px;
+  }
+
+  .jd-purpose { font-size: 0.95rem; color: var(--ink-soft); max-width: 62ch; }
+
+  .jd-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    padding: 12px 14px;
+    background: color-mix(in srgb, var(--c) 12%, var(--surface-sunk));
+    border-radius: 8px;
+  }
+
+  .jd-facts div { display: flex; flex-direction: column; gap: 2px; }
+
+  .jd-facts dt {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .jd-facts dd { margin: 0; font-size: 0.86rem; font-weight: 600; }
+
+  .jd-block h4 {
+    margin: 0 0 8px;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--c);
+  }
+
+  .jd-block ul {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 0.9rem;
+  }
+
+  .jd-block ul li::marker { color: var(--c); }
+
+  @media (max-width: 560px) {
+    .jd-card summary { flex-wrap: wrap; }
+    .jd-dept { min-width: 0; }
+  }
+
+  /* ---------- Footer ---------- */
+
+  .footnote {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  .footnote p { margin: 0; font-size: 0.85rem; color: var(--ink-faint); }
+
+  /* ---------- RACI ---------- */
+
+  .raci-section { padding-top: 44px; scroll-margin-top: 70px; }
+
+  .raci-section h2 { font-size: 1.4rem; font-weight: 600; margin-bottom: 8px; }
+
+  .raci-legend {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 18px;
+    row-gap: 6px;
+    margin: 0 0 18px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  .raci-legend b { color: var(--ink); }
+
+  .raci-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  .raci-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 780px;
+    font-size: 0.84rem;
+  }
+
+  .raci-table th, .raci-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .raci-table td:first-child, .raci-table th:first-child {
+    text-align: left;
+    white-space: normal;
+    min-width: 240px;
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+
+  .raci-table thead th {
+    background: var(--surface-sunk);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .raci-table thead th:first-child { z-index: 3; }
+
+  .raci-table td:nth-child(2) { --c: var(--c-brand); }
+  .raci-table td:nth-child(3) { --c: var(--c-demand); }
+  .raci-table td:nth-child(4) { --c: var(--c-supply); }
+  .raci-table td:nth-child(5) { --c: var(--accent); }
+  .raci-table td:nth-child(6) { --c: var(--c-store); }
+  .raci-table td:nth-child(7) { --c: var(--c-store); }
+
+  .raci-role {
+    color: var(--c);
+    border-bottom: 2px solid var(--c);
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 6px 6px 0 0;
+    transition: background .15s ease, color .15s ease;
+  }
+
+  .raci-role:hover, .raci-role:focus-visible { background: color-mix(in srgb, var(--c) 18%, var(--surface-sunk)); outline: none; }
+
+  .raci-role.raci-active {
+    background: color-mix(in srgb, var(--c) 32%, var(--surface-sunk));
+    color: var(--ink);
+  }
+
+  .raci-role.raci-active::after { content: " ✕"; opacity: .6; font-size: .8em; font-weight: 500; }
+
+  .raci-table td, .raci-table th { transition: opacity .15s ease, background .15s ease; }
+  .raci-table td.raci-dim, .raci-table th.raci-dim { opacity: .22; }
+
+  .raci-table tr.raci-row-owned td:first-child {
+    background: color-mix(in srgb, var(--ink) 5%, var(--surface));
+    font-weight: 600;
+  }
+
+  .raci-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--ink) 3%, transparent); }
+  .raci-table tbody tr:nth-child(even) td:first-child { background: color-mix(in srgb, var(--ink) 3%, var(--surface)); }
+  .raci-table tbody tr.raci-row-owned:nth-child(even) td:first-child { background: color-mix(in srgb, var(--ink) 7%, var(--surface)); }
+
+  .raci-a { font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 6px; }
+  .raci-r { font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 6px; }
+  .raci-c { font-weight: 500; color: var(--c); opacity: .8; }
+  .raci-i { font-weight: 500; color: var(--c); opacity: .5; font-size: .85em; }
+  .raci-none { opacity: .22; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="quicknav">
+    <a href="#overview">Обзор</a>
+    <a href="#problems">Проблемы</a>
+    <a href="#orgchart">Департамент</a>
+    <a href="#scheme">Схема</a>
+    <a href="#dist-org">Дистрибуция</a>
+    <a href="#loop">Цикл</a>
+    <a href="#jd-cat">Категорийный</a>
+    <a href="#jd-demand">Demand Planning</a>
+    <a href="#jd-supply">Stock Control</a>
+    <a href="#jd-kam">KAM</a>
+    <a href="#jd-vm">VM</a>
+    <a href="#jd-sales">Сейлс-консультант</a>
+    <a href="#raci">RACI</a>
+  </nav>
+
+  <header id="overview" class="hero">
+    <p class="top-note">Структура предложена с учётом направления парфюмерия, в том числе.</p>
+    <p class="eyebrow">ITALDIZAIN</p>
+    <h1>Департамент корпоративных продаж и дистрибуции</h1>
+    <p class="subtitle">Реструктуризация направления «Дистрибуция»</p>
+    <p class="status-badge">Предложение на согласование с CEO</p>
+    <div class="proposal-block">
+      <p class="proposal-label">Предложение</p>
+      <ul>
+        <li><strong>Категорийный / бренд-менеджмент</strong> — вывести в отдельный департамент управления брендом или категориями.</li>
+        <li><strong>Demand planning (страна)</strong> — оформить как самостоятельную функцию.</li>
+        <li><strong>Stock Control &amp; Replenishment (точка продаж / клиент)</strong> — оформить как самостоятельную функцию.</li>
+        <li><strong>KAM</strong> — остаётся в департаменте дистрибуции: коммуникация с клиентом, контроль оплат, документов и отчётов, технические вопросы точки, распределение товара между точками.</li>
+      </ul>
+    </div>
+  </header>
+
+  <section id="problems" class="scheme-section">
+    <h2>Почему это нужно сейчас</h2>
+
+    <div class="problem-block" style="--c: var(--accent)">
+      <p class="proposal-label">Работа с клиентом</p>
+      <ul>
+        <li>Отсутствие полноценной работы с клиентом.</li>
+        <li>Бесконтрольная отгрузка товара клиенту — без аналитики.</li>
+        <li>Отсутствие тренингов и контроля VM-выкладки.</li>
+      </ul>
+    </div>
+
+    <div class="problem-block" style="--c: var(--c-brand)">
+      <p class="proposal-label">Работа с брендом и категорией</p>
+      <ul>
+        <li>Отсутствие полноценной работы с представителями брендов.</li>
+        <li>Отсутствие плана по развитию направления парфюмерия.</li>
+        <li>Отсутствие маркетинг-плана; невыполнение условий договорённостей с брендами по маркам, уже имеющимся в портфеле.</li>
+        <li>Отсутствие контроля ценообразования и маржинальности.</li>
+        <li>Отсутствие работы с парфюмерией в собственных бутиках, а также без внимания остаются Esteban, Millefiori, Scottish Fine Soaps, Isabelle Laurier.</li>
+      </ul>
+    </div>
+
+    <div class="problem-block" style="--c: var(--c-demand)">
+      <p class="proposal-label">Планирование закупки и грамотное распределение товара между точками продаж</p>
+      <ul>
+        <li>Бесконтрольный заказ нового товара без логического обоснования — результат: overstock и просроченный товар, от которого избавляемся уже год.</li>
+        <li>Завоз новых марок без предварительной аналитики рынка, товара и его маржинальности — результат: необоснованный заказ товара, оказавшегося неактуальным для рынка (PHILIPP PLEIN, ICEBERG, PINK SUGAR, JAGUAR).</li>
+        <li>Решение о завозе новой марки принимается под давлением бренда, без логического обоснования.</li>
+        <li>Отсутствие своевременных выплат по заказам брендам — приводит к перестраховке со стороны дистрибуционного менеджера и размещению заказа большего объёма, чем нужно.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="orgchart" class="scheme-section">
+    <h2>Структура департамента (предложение)</h2>
+
+    <figure class="scheme">
+      <svg viewBox="0 0 820 470" role="img" aria-label="Департамент делится на дистрибуцию и корпоративные продажи. Внутри дистрибуции KAM и VM общие для обеих моделей работы — через партнёра и самостоятельно; сейлс-консультант нужен только при самостоятельном управлении точкой. В корпоративных продажах свой KAM, с ростом до нескольких по мере роста продаж">
+        <defs>
+          <marker id="arrow3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+
+        <rect x="260" y="18" width="300" height="52" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+        <text x="410" y="49" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Руководитель департамента</text>
+
+        <line x1="410" y1="70" x2="410" y2="105" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="200" y1="105" x2="620" y2="105" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="200" y1="105" x2="200" y2="138" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"></line>
+        <line x1="620" y1="105" x2="620" y2="138" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"></line>
+
+        <rect x="70" y="140" width="260" height="60" rx="8" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-width="2"></rect>
+        <text x="200" y="176" text-anchor="middle" font-size="13.5" font-weight="700" fill="currentColor">Дистрибуция</text>
+
+        <rect x="490" y="140" width="260" height="60" rx="8" fill="var(--c-corp)" fill-opacity="0.08" stroke="var(--c-corp)" stroke-width="2"></rect>
+        <text x="620" y="176" text-anchor="middle" font-size="13.5" font-weight="700" fill="currentColor">Корпоративные продажи</text>
+
+        <line x1="620" y1="200" x2="620" y2="222" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="550" y1="222" x2="690" y2="222" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="550" y1="222" x2="550" y2="240" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"></line>
+        <line x1="690" y1="222" x2="690" y2="240" stroke="currentColor" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow3)"></line>
+
+        <rect x="490" y="242" width="120" height="56" rx="7" fill="var(--c-corp)" fill-opacity="0.08" stroke="var(--c-corp)" stroke-width="1.5"></rect>
+        <text x="550" y="266" text-anchor="middle" font-size="11.5" font-weight="600" fill="currentColor">KAM</text>
+        <text x="550" y="281" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.7">корп. продажи</text>
+
+        <rect x="630" y="242" width="120" height="56" rx="7" fill="var(--c-corp)" fill-opacity="0.08" stroke="var(--c-corp)" stroke-width="1.3" stroke-dasharray="3 3" opacity="0.55"></rect>
+        <text x="690" y="266" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.6">KAM 2, 3…</text>
+        <text x="690" y="281" text-anchor="middle" font-size="8.5" fill="currentColor" opacity="0.5">по мере роста</text>
+
+        <line x1="200" y1="200" x2="200" y2="222" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="130" y1="222" x2="270" y2="222" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="130" y1="222" x2="130" y2="240" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"></line>
+        <line x1="270" y1="222" x2="270" y2="240" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"></line>
+
+        <rect x="70" y="242" width="120" height="56" rx="7" fill="var(--accent)" fill-opacity="0.1" stroke="var(--accent)" stroke-width="2"></rect>
+        <text x="130" y="276" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">KAM</text>
+
+        <rect x="210" y="242" width="120" height="56" rx="7" fill="var(--c-store)" fill-opacity="0.1" stroke="var(--c-store)" stroke-width="2"></rect>
+        <text x="270" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">VM</text>
+        <text x="270" y="287" text-anchor="middle" font-size="8.5" fill="currentColor" opacity="0.75">мерчендайзер</text>
+
+        <line x1="200" y1="298" x2="200" y2="318" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="105" y1="318" x2="295" y2="318" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="105" y1="318" x2="105" y2="336" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"></line>
+        <line x1="295" y1="318" x2="295" y2="336" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"></line>
+
+        <rect x="20" y="338" width="170" height="52" rx="7" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+        <text x="105" y="360" text-anchor="middle" font-size="11.5" font-weight="600" fill="currentColor">Через партнёра</text>
+        <text x="105" y="376" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.75">товар на реализацию</text>
+
+        <rect x="210" y="338" width="170" height="52" rx="7" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+        <text x="295" y="360" text-anchor="middle" font-size="11.5" font-weight="600" fill="currentColor">Самостоятельно</text>
+        <text x="295" y="376" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.75">точку ведёт департамент</text>
+
+        <line x1="295" y1="390" x2="295" y2="408" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow3)"></line>
+
+        <rect x="210" y="410" width="170" height="42" rx="7" fill="var(--c-store)" fill-opacity="0.08" stroke="var(--c-store)" stroke-width="1.5"></rect>
+        <text x="295" y="435" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">Сейлс-консультант</text>
+
+        <text x="410" y="462" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.7">KAM — по одному на направление сейчас; дальше несколько, по категориям / клиентам.</text>
+      </svg>
+      <figcaption>
+        <p class="proposal-label">Предложение</p>
+        <ul>
+          <li>Разделить департамент на два направления — <strong>дистрибуция</strong> и <strong>корпоративные продажи</strong> (B2B).</li>
+          <li><strong>Дистрибуция</strong>: KAM и VM общие для обеих моделей — <strong>через партнёра</strong> (товар на реализацию, точку ведёт партнёр) и <strong>самостоятельно</strong> (точку ведёт департамент, нужен сейлс-консультант).</li>
+          <li><strong>KAM</strong> не делится по формату работы — только по категориям, по мере роста дистрибуции.</li>
+        </ul>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="scheme" class="scheme-section">
+    <h2>Разделение функций (предложение)</h2>
+
+    <figure class="scheme">
+      <svg viewBox="0 0 960 260" role="img" aria-label="Предложение: одна роль с четырьмя функциями разделяется на четыре — категорийный менеджер предлагается перевести в департамент управления брендом или категориями, demand planner на страну — в demand planning, stock control and replenishment на точку продаж, KAM остаётся в дистрибуции с коммуникацией с клиентом, контролем оплат, документов, отчётов, технических вопросов точки и распределения товара между точками">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+
+        <rect x="330" y="16" width="300" height="54" rx="8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"></rect>
+        <text x="480" y="36" text-anchor="middle" font-size="10" letter-spacing="0.06em" fill="currentColor" opacity="0.6" class="mono">СЕЙЧАС</text>
+        <text x="480" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Одна роль — 4 функции</text>
+
+        <line x1="480" y1="70" x2="480" y2="105" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="120" y1="105" x2="840" y2="105" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="120" y1="105" x2="120" y2="143" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"></line>
+        <line x1="360" y1="105" x2="360" y2="143" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"></line>
+        <line x1="600" y1="105" x2="600" y2="143" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"></line>
+        <line x1="840" y1="105" x2="840" y2="143" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+        <rect x="15" y="145" width="210" height="95" rx="8" fill="var(--c-brand)" fill-opacity="0.08" stroke="var(--c-brand)" stroke-width="1.5"></rect>
+        <text x="120" y="168" text-anchor="middle" font-size="10" font-weight="600" letter-spacing="0.05em" fill="var(--c-brand)" class="mono">→ БРЕНД-МЕНЕДЖМЕНТ</text>
+        <text x="120" y="196" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Категорийный /</text>
+        <text x="120" y="213" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">бренд-менеджер</text>
+
+        <rect x="255" y="145" width="210" height="95" rx="8" fill="var(--c-demand)" fill-opacity="0.08" stroke="var(--c-demand)" stroke-width="1.5"></rect>
+        <text x="360" y="168" text-anchor="middle" font-size="10" font-weight="600" letter-spacing="0.05em" fill="var(--c-demand)" class="mono">→ DEMAND PLANNING</text>
+        <text x="360" y="196" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Demand planner</text>
+        <text x="360" y="213" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">— на страну</text>
+
+        <rect x="495" y="145" width="210" height="95" rx="8" fill="var(--c-supply)" fill-opacity="0.08" stroke="var(--c-supply)" stroke-width="1.5"></rect>
+        <text x="600" y="168" text-anchor="middle" font-size="9" font-weight="600" letter-spacing="0.03em" fill="var(--c-supply)" class="mono">→ STOCK CONTROL &amp; REPL.</text>
+        <text x="600" y="196" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Stock Control &amp;</text>
+        <text x="600" y="213" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Replenishment</text>
+
+        <rect x="735" y="145" width="210" height="95" rx="8" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-width="2.5"></rect>
+        <text x="840" y="168" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="0.05em" fill="var(--accent)" class="mono">→ ДИСТРИБУЦИЯ</text>
+        <text x="840" y="197" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">KAM</text>
+        <text x="840" y="216" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.75">+ оплаты, документы,</text>
+        <text x="840" y="230" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.75">отчёты</text>
+      </svg>
+      <figcaption>
+        <p class="proposal-label">Предложение</p>
+        <ul>
+          <li><strong>Категорийный менеджмент</strong> → департамент управления брендом или категориями.</li>
+          <li><strong>Demand planning (страна)</strong> → отдельная функция вне дистрибуции.</li>
+          <li><strong>Stock Control &amp; Replenishment (точка продаж / клиент)</strong> → отдельная функция вне дистрибуции.</li>
+          <li><strong>KAM</strong> → остаётся в департаменте дистрибуции: клиент, оплаты, документы, отчётность, технические вопросы точки, распределение товара между точками.</li>
+        </ul>
+      </figcaption>
+    </figure>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--c-brand)"></span>Департамент управления брендом или категориями</div>
+      <div class="legend-item"><span class="legend-dot shape-triangle" style="background:var(--c-demand)"></span>Demand Planning</div>
+      <div class="legend-item"><span class="legend-dot shape-diamond" style="background:var(--c-supply)"></span>Stock Control &amp; Replenishment</div>
+      <div class="legend-item"><span class="legend-dot shape-circle" style="background:var(--accent)"></span>Департамент дистрибуции</div>
+    </div>
+
+    <h3 id="dist-org" class="loop-heading">Оргструктура направления «Дистрибуция»</h3>
+
+    <figure class="scheme">
+      <svg viewBox="0 0 820 235" role="img" aria-label="Сейчас направление «Дистрибуция» включает четыре роли: KAM, категорийного / бренд-менеджера, demand planner и stock control &amp; replenishment. Предлагается: KAM остаётся внутри направления, остальные три роли выходят из дистрибуции в свои департаменты">
+        <defs>
+          <marker id="arrow4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+
+        <rect x="305" y="16" width="210" height="50" rx="8" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-width="2"></rect>
+        <text x="410" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">Дистрибуция</text>
+
+        <line x1="410" y1="66" x2="410" y2="95" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="110" y1="95" x2="710" y2="95" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="110" y1="95" x2="110" y2="128" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow4)"></line>
+        <line x1="310" y1="95" x2="310" y2="128" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow4)"></line>
+        <line x1="510" y1="95" x2="510" y2="128" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow4)"></line>
+        <line x1="710" y1="95" x2="710" y2="128" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow4)"></line>
+
+        <rect x="25" y="130" width="170" height="85" rx="7" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-width="2.5"></rect>
+        <text x="110" y="155" text-anchor="middle" font-size="9.5" font-weight="600" letter-spacing="0.04em" fill="var(--accent)" class="mono">ОСТАЁТСЯ</text>
+        <text x="110" y="182" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">KAM</text>
+
+        <rect x="225" y="130" width="170" height="85" rx="7" fill="var(--c-brand)" fill-opacity="0.06" stroke="var(--c-brand)" stroke-width="1.3" stroke-dasharray="3 3" opacity="0.85"></rect>
+        <text x="310" y="152" text-anchor="middle" font-size="8.5" font-weight="600" letter-spacing="0.02em" fill="var(--c-brand)" class="mono">→ УПРАВЛЕНИЕ БРЕНДОМ</text>
+        <text x="310" y="176" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Категорийный /</text>
+        <text x="310" y="193" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">бренд-менеджер</text>
+
+        <rect x="425" y="130" width="170" height="85" rx="7" fill="var(--c-demand)" fill-opacity="0.06" stroke="var(--c-demand)" stroke-width="1.3" stroke-dasharray="3 3" opacity="0.85"></rect>
+        <text x="510" y="155" text-anchor="middle" font-size="8.5" font-weight="600" letter-spacing="0.02em" fill="var(--c-demand)" class="mono">→ DEMAND PLANNING</text>
+        <text x="510" y="182" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Demand planner</text>
+
+        <rect x="625" y="130" width="170" height="85" rx="7" fill="var(--c-supply)" fill-opacity="0.06" stroke="var(--c-supply)" stroke-width="1.3" stroke-dasharray="3 3" opacity="0.85"></rect>
+        <text x="710" y="152" text-anchor="middle" font-size="8.5" font-weight="600" letter-spacing="0.02em" fill="var(--c-supply)" class="mono">→ STOCK CONTROL</text>
+        <text x="710" y="176" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Stock Control &amp;</text>
+        <text x="710" y="193" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Replenishment</text>
+      </svg>
+      <figcaption>
+        <p class="proposal-label">Предложение</p>
+        <ul>
+          <li><strong>KAM</strong> — остаётся внутри направления «Дистрибуция».</li>
+          <li><strong>Категорийный / бренд-менеджер, demand planner, Stock Control &amp; Replenishment</strong> — выходят из «Дистрибуции» в свои департаменты (пунктир на схеме).</li>
+        </ul>
+      </figcaption>
+    </figure>
+
+    <h3 id="loop" class="loop-heading">Как роли работают друг с другом</h3>
+
+    <figure class="scheme">
+      <svg viewBox="0 0 960 270" role="img" aria-label="Замкнутый цикл: категорийный менеджер передаёт план закупки demand planner’у, тот передаёт наличие товара в stock control и replenishment, тот отгружает на точку и обменивается с KAM заказами и статусом поставки, KAM возвращает спрос и ситуацию у клиента категорийному менеджеру, а категорийный менеджер напрямую передаёт KAM стандарты по промо и ассортименту">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+
+        <text x="480" y="26" text-anchor="middle" font-size="10" letter-spacing="0.04em" fill="currentColor" opacity="0.7">VM-гайдлайны, промо, ассортимент</text>
+        <line x1="120" y1="35" x2="840" y2="35" stroke="currentColor" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrow2)"></line>
+        <line x1="120" y1="35" x2="120" y2="110" stroke="currentColor" stroke-width="1.3" stroke-dasharray="3 3"></line>
+        <line x1="840" y1="35" x2="840" y2="110" stroke="currentColor" stroke-width="1.3" stroke-dasharray="3 3"></line>
+
+        <text x="240" y="75" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.85">план закупки</text>
+        <line x1="120" y1="65" x2="360" y2="65" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"></line>
+        <text x="480" y="75" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.85">наличие на складе</text>
+        <line x1="360" y1="65" x2="600" y2="65" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"></line>
+        <text x="720" y="75" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.85">статус поставки</text>
+        <line x1="600" y1="65" x2="840" y2="65" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"></line>
+
+        <line x1="120" y1="65" x2="120" y2="110" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="360" y1="65" x2="360" y2="110" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="600" y1="65" x2="600" y2="110" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="840" y1="65" x2="840" y2="110" stroke="currentColor" stroke-width="1.5"></line>
+
+        <rect x="15" y="110" width="210" height="90" rx="8" fill="var(--c-brand)" fill-opacity="0.08" stroke="var(--c-brand)" stroke-width="1.5"></rect>
+        <text x="120" y="150" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Категорийный /</text>
+        <text x="120" y="167" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">бренд-менеджер</text>
+
+        <rect x="255" y="110" width="210" height="90" rx="8" fill="var(--c-demand)" fill-opacity="0.08" stroke="var(--c-demand)" stroke-width="1.5"></rect>
+        <text x="360" y="158" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Demand planner</text>
+
+        <rect x="495" y="110" width="210" height="90" rx="8" fill="var(--c-supply)" fill-opacity="0.08" stroke="var(--c-supply)" stroke-width="1.5"></rect>
+        <text x="600" y="150" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Stock Control &amp;</text>
+        <text x="600" y="167" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Replenishment</text>
+
+        <rect x="735" y="110" width="210" height="90" rx="8" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-width="2.5"></rect>
+        <text x="840" y="158" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">KAM</text>
+
+        <line x1="600" y1="200" x2="600" y2="225" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="840" y1="200" x2="840" y2="225" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="840" y1="225" x2="600" y2="225" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"></line>
+        <text x="720" y="218" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.85">заказ, график отгрузки</text>
+
+        <line x1="120" y1="200" x2="120" y2="255" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="840" y1="225" x2="840" y2="255" stroke="currentColor" stroke-width="1.5"></line>
+        <line x1="840" y1="255" x2="120" y2="255" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow2)"></line>
+        <text x="480" y="248" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.85">спрос, ситуация у клиента</text>
+      </svg>
+      <figcaption>
+        <p class="proposal-label">Логика цикла</p>
+        <ul>
+          <li>Категорийный менеджер — задаёт план и стандарты по промо и ассортименту.</li>
+          <li>Demand planner — переводит план в объём закупки на страну.</li>
+          <li>Stock Control &amp; Replenishment — доводит товар до точки, обменивается с KAM заказами и статусом поставки.</li>
+          <li>KAM — возвращает спрос и ситуацию у клиента обратно категорийному менеджеру.</li>
+        </ul>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="jd-section">
+    <h2>Job description</h2>
+
+    <details class="jd-card" id="jd-cat" style="--c: var(--c-brand)">
+      <summary>
+        <svg class="role-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2" fill="currentColor"></rect></svg>
+        <span class="jd-dept">Бренд-менеджмент</span>
+        <span class="jd-title">Категорийный / бренд-менеджер</span>
+        <span class="jd-chev">+</span>
+      </summary>
+      <div class="jd-body">
+        <p class="jd-purpose">Управляет портфелем бренда или категории как отдельным бизнесом — от ассортимента и цены до присутствия у клиента.</p>
+
+        <div class="jd-facts">
+          <div><dt>Департамент</dt><dd>Управление брендом или категориями</dd></div>
+          <div><dt>Подчиняется</dt><dd>Руководителю деп. управления брендом / категориями</dd></div>
+          <div><dt>Тип роли</dt><dd>Индивидуальная, по бренду / категории</dd></div>
+        </div>
+
+        <div class="jd-block">
+          <h4>Обязанности</h4>
+          <ul>
+            <li>Ассортиментная политика: ввод и вывод SKU, обновление линейки, работа с неликвидом и slow movers.</li>
+            <li>Ценообразование и маржинальность по бренду / категории — совместно с KAM.</li>
+            <li>Формирование прайс-листов — основа для коммерческих предложений, которые KAM собирает для клиента.</li>
+            <li>Переговоры с брендами-поставщиками: условия, эксклюзивность, маркетинговая поддержка.</li>
+            <li>Позиционирование бренда на рынке, точки присутствия (совместно с KAM и департаментом дистрибуции).</li>
+            <li>Поиск и анализ новых брендов и товаров для расширения портфеля компании.</li>
+            <li>Планирование и реализация маркетинговой активности и промо по брендам, включая обучение / тренинги в точках.</li>
+            <li>Постановка задачи demand planner’у на страну по объёмам закупки — формирует план вместе с ним, не считает штуки сам.</li>
+            <li>P&amp;L категории: контроль оборота, маржи и остатков по направлению в целом (совместно с KAM и департаментом дистрибуции).</li>
+            <li>Разработка гайдлайнов VM и бренд-стандартов для точек продаж — VM-специалист контролирует их соблюдение на местах.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>KPI</h4>
+          <ul>
+            <li>Выполнение плана продаж по бренду / категории (sell-in) — исторически самый весомый KPI блока. Это единый агрегированный план по всем каналам; личные планы KAM — его декомпозиция по клиентам, а не отдельная цифра.</li>
+            <li>P&amp;L и маржинальность по ключевым брендам.</li>
+            <li>Сокращение слоумуверов / deadstock — по сумме и по количеству SKU, через разработку коммерческих предложений на такой товар.</li>
+            <li>Доля SKU в дистрибуции, доля неликвида и уценки.</li>
+            <li>Защита и выполнение маркетинг-плана по дистрибуции; тренинги и промо в точках.</li>
+            <li>Актуальность гайдлайнов VM и бренд-стандартов, по которым VM-специалист контролирует точки.</li>
+            <li>Привлечение новых брендов, расширение портфеля.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Требования</h4>
+          <ul>
+            <li>Опыт в категорийном или бренд-менеджменте от 2–3 лет.</li>
+            <li>Понимание unit-экономики и ценообразования.</li>
+            <li>Переговорные навыки, опыт работы с поставщиками / брендами.</li>
+            <li>Английский язык — для коммуникации с международными брендами.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Взаимодействует с</h4>
+          <ul>
+            <li>Demand planner (страна) — по объёмам закупки.</li>
+            <li>KAM — обратная связь по спросу и ситуации у клиентов.</li>
+            <li>Финансовый блок — бюджет закупки, маржинальность.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <details class="jd-card" id="jd-demand" style="--c: var(--c-demand)">
+      <summary>
+        <svg class="role-icon" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,2 14,14 2,14" fill="currentColor"></polygon></svg>
+        <span class="jd-dept">Demand Planning</span>
+        <span class="jd-title">Demand planner — на страну</span>
+        <span class="jd-chev">+</span>
+      </summary>
+      <div class="jd-body">
+        <p class="jd-purpose">Обеспечивает нужный объём товара в стране в нужный момент — без дефицита и без затоваривания склада.</p>
+
+        <div class="jd-facts">
+          <div><dt>Департамент</dt><dd>Demand Planning</dd></div>
+          <div><dt>Подчиняется</dt><dd>Руководителю Demand Planning</dd></div>
+          <div><dt>Тип роли</dt><dd>Индивидуальная, по стране / направлению</dd></div>
+        </div>
+
+        <div class="jd-block">
+          <h4>Обязанности</h4>
+          <ul>
+            <li>Расчёт объёма закупки у бренда на страну на период — сезон, квартал, год.</li>
+            <li>Работа с остатками склада, статистикой продаж и сезонными коэффициентами.</li>
+            <li>Согласование заказа с категорийным менеджером и бюджетом закупки.</li>
+            <li>Контроль сроков поставки от бренда, синхронизация с логистикой и таможней.</li>
+            <li>Контроль стока с истекающими / устаревшими сроками годности на уровне страны: проверка входящих в страну позиций по накладным, переговоры с брендами по ограничению отгрузок товара с критическим сроком годности.</li>
+            <li>Раннее предупреждение о риске дефицита или затоваривания.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>KPI</h4>
+          <ul>
+            <li>Точность прогноза (forecast accuracy).</li>
+            <li>Уровень сервиса — доля позиций в наличии (in-stock rate).</li>
+            <li>Доля старого / просроченного товара в общем стоке страны (например, не более 5% на конец года по прежней методике).</li>
+            <li>Оборачиваемость склада.</li>
+            <li>Отсутствие просроченных и зависших остатков.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Требования</h4>
+          <ul>
+            <li>Опыт в планировании спроса или закупках от 1–2 лет.</li>
+            <li>Уверенный Excel / BI-инструменты.</li>
+            <li>Аналитический склад ума, работа с большими массивами данных.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Взаимодействует с</h4>
+          <ul>
+            <li>Категорийным / бренд-менеджером — план по объёмам.</li>
+            <li>Stock Control &amp; Replenishment — передача товара дальше, к точке продаж.</li>
+            <li>Складом и финансовым блоком — сроки, бюджет закупки.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <details class="jd-card" id="jd-supply" style="--c: var(--c-supply)">
+      <summary>
+        <svg class="role-icon" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,1 15,8 8,15 1,8" fill="currentColor"></polygon></svg>
+        <span class="jd-dept">Stock Control</span>
+        <span class="jd-title">Stock Control &amp; Replenishment</span>
+        <span class="jd-chev">+</span>
+      </summary>
+      <div class="jd-body">
+        <p class="jd-purpose">Доводит товар со склада до конкретной точки продаж или клиента — вовремя и в нужном объёме.</p>
+
+        <div class="jd-facts">
+          <div><dt>Департамент</dt><dd>Stock Control &amp; Replenishment</dd></div>
+          <div><dt>Подчиняется</dt><dd>Руководителю Stock Control &amp; Replenishment</dd></div>
+          <div><dt>Тип роли</dt><dd>Индивидуальная, по пулу точек / клиентов</dd></div>
+        </div>
+
+        <div class="jd-block">
+          <h4>Обязанности</h4>
+          <ul>
+            <li>Расчёт потребности каждой точки продаж или клиента — на основе продаж и остатков на месте.</li>
+            <li>Планирование графика и объёма отгрузок клиенту: частота, размер партии.</li>
+            <li>Контроль отсутствия дыр на полке и излишков на складе у клиента.</li>
+            <li>Контроль наличия базового ассортимента в топовых точках продаж — совместно с KAM.</li>
+            <li>Координация со складом и логистикой по срокам отгрузки.</li>
+            <li>Соблюдение регламента отгрузок и заказов: без реализации или постоплаты без подтверждения финансового блока и контракта.</li>
+            <li>Информирование KAM о статусе поставки и проблемах — задержки, недостачи.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>KPI</h4>
+          <ul>
+            <li>On-time-in-full (OTIF) по отгрузкам.</li>
+            <li>Наличие базового ассортимента в топовых точках.</li>
+            <li>Отсутствие out-of-stock у клиента.</li>
+            <li>Скорость обработки заявки на отгрузку.</li>
+            <li>Соблюдение регламента отгрузок и заказов.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Требования</h4>
+          <ul>
+            <li>Опыт в логистике или stock control / replenishment от 1–2 лет.</li>
+            <li>Внимательность к деталям, работа с большим количеством SKU и точек одновременно.</li>
+            <li>Уверенный Excel, опыт со складскими / учётными системами.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Взаимодействует с</h4>
+          <ul>
+            <li>KAM — сколько и когда нужно конкретному клиенту.</li>
+            <li>Demand planner (страна) — наличие товара на складе страны.</li>
+            <li>Складом и логистикой — исполнение отгрузки.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <details class="jd-card" id="jd-kam" open style="--c: var(--accent)">
+      <summary>
+        <svg class="role-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="currentColor"></circle></svg>
+        <span class="jd-dept">Дистрибуция</span>
+        <span class="jd-title">KAM — Key Account Manager</span>
+        <span class="jd-chev">+</span>
+      </summary>
+      <div class="jd-body">
+        <p class="jd-purpose">Полная ответственность за клиента: коммуникация, коммерческие договорённости, порядок в деньгах и документах, порядок на точке продаж.</p>
+
+        <div class="jd-facts">
+          <div><dt>Департамент</dt><dd>Дистрибуция</dd></div>
+          <div><dt>Подчиняется</dt><dd>Руководителю департамента дистрибуции</dd></div>
+          <div><dt>Тип роли</dt><dd>По направлению — несколько клиентов на KAM</dd></div>
+        </div>
+
+        <div class="jd-block">
+          <h4>Обязанности</h4>
+          <ul>
+            <li>Поиск потенциальных клиентов, назначение встреч, коммерческие переговоры, открытие новых точек продаж.</li>
+            <li>Ведение отношений с действующими клиентами: развитие, удержание, рост оборота.</li>
+            <li>Основная точка коммуникации с клиентом по всем текущим вопросам.</li>
+            <li>Управление пулом клиентов в рамках направления — например, посуда или парфюмерия.</li>
+            <li>Решение технических проблем, связанных с точкой продаж — оборудование, витрина, доступ, локальные накладки.</li>
+            <li>Контроль распределения товара между точками продаж — внутри одного клиента, чтобы сток не концентрировался в одних точках в ущерб другим.</li>
+            <li>Обработка заявок клиентов, формирование коммерческих предложений на основе прайс-листа от категорийного / бренд-менеджера.</li>
+            <li>Согласование промо и ассортимента с категорийным / бренд-менеджером.</li>
+            <li>Контроль оплат: сроки, дебиторская задолженность, соответствие условиям контракта.</li>
+            <li>Контроль документооборота: накладные, акты сверки, договоры — полнота и актуальность.</li>
+            <li>Контроль отчётности по клиенту: sell-in, sell-out, статусы платежей, VM, промо — в едином формате.</li>
+            <li>Переговоры по возврату товара и разрешению спорных моментов с клиентами.</li>
+            <li>Участие в разработке программ лояльности для клиентов.</li>
+            <li>Организация тренингов на точках продаж.</li>
+            <li>Обсуждение и запуск любых акций и промо у клиента.</li>
+            <li>Организация инвентаризации на складе клиента.</li>
+            <li>Контроль остатков на складе дистрибьютора / партнёра — объёмы и соответствие фактическим продажам.</li>
+            <li>Координация работы между складом поставщика и нашим складом.</li>
+            <li>Контроль списаний товара по системе (1С или другая внутренняя система), оформление продаж в системе, контроль совпадения физических остатков с виртуальными.</li>
+            <li>Помощь в подписании актов сверки между клиентом и ITALDIZAIN.</li>
+            <li>Контроль остатков по срокам годности; приоритет продажи остатков с ограниченным сроком годности (FEFO).</li>
+            <li>Административные вопросы по своим клиентам и точкам.</li>
+            <li>Работа с сейлс-стаффом на точках продаж.</li>
+            <li>Передача потребности клиента в Stock Control &amp; Replenishment; обратная связь по спросу — в категорийный менеджмент.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>KPI</h4>
+          <ul>
+            <li>Выполнение плана продаж по своим клиентам (sell-in / sell-out) — это доля от общего плана категорийного / бренд-менеджера, а не отдельная цифра; сумма планов всех KAM = план категорийного менеджера.</li>
+            <li>Открытие новых точек продаж, поиск и подключение новых клиентов — отдельная цель роста, вне текущей клиентской базы.</li>
+            <li>Дебиторская задолженность в пределах нормы — без просрочки более 30 дней.</li>
+            <li>Сокращение слоумуверов / deadstock у своих клиентов.</li>
+            <li>Отсутствие расхождений в документах и оплатах.</li>
+            <li>Своевременность и полнота отчётности по клиенту.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Требования</h4>
+          <ul>
+            <li>Опыт в продажах или работе с ключевыми клиентами от 2 лет.</li>
+            <li>Одинаково уверенно работает с людьми, документами и цифрами.</li>
+            <li>Нацеленность на развитие: поиск и открытие новых клиентов, а не только ведение текущих.</li>
+            <li>Самостоятельность — доводит вопрос по оплате или документу до закрытия без напоминаний.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Взаимодействует с</h4>
+          <ul>
+            <li>Stock Control &amp; Replenishment — заказ и график отгрузки на точку.</li>
+            <li>Категорийным / бренд-менеджментом — спрос и ситуация у клиента.</li>
+            <li>Финансовым / бухгалтерским блоком — оплаты и документы.</li>
+            <li>VM (обе модели) и сейлс-консультантом на точке (модель «самостоятельно») — выкладка и продажи на месте.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Рост роли</h4>
+          <ul>
+            <li>Сейчас: один KAM ведёт все направления и всех клиентов сразу.</li>
+            <li>По мере роста: KAM делятся по направлениям — KAM (посуда), KAM (парфюмерия) и т. д., каждый со своим пулом клиентов, сохраняя все три зоны ответственности — клиент, деньги, документы.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <details class="jd-card" id="jd-vm" style="--c: var(--c-store)">
+      <summary>
+        <svg class="role-icon" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,1 15,8 8,15 1,8" fill="currentColor"></polygon></svg>
+        <span class="jd-dept">Дистрибуция</span>
+        <span class="jd-title">VM — мерчендайзер</span>
+        <span class="jd-chev">+</span>
+      </summary>
+      <div class="jd-body">
+        <p class="jd-purpose">Отвечает за выкладку и внешний вид точки — общая роль для обеих моделей дистрибуции, «через партнёра» и «самостоятельно».</p>
+
+        <div class="jd-facts">
+          <div><dt>Департамент</dt><dd>Дистрибуция</dd></div>
+          <div><dt>Подчиняется</dt><dd>Руководителю департамента дистрибуции</dd></div>
+          <div><dt>Тип роли</dt><dd>Общая для обеих моделей — партнёр и самостоятельно</dd></div>
+        </div>
+
+        <div class="jd-block">
+          <h4>Обязанности</h4>
+          <ul>
+            <li>Выкладка товара на точке согласно планограмме и VM-стандартам бренда.</li>
+            <li>Контроль VM на точках согласно гайдлайнам, предоставленным категорийным / бренд-менеджером.</li>
+            <li>Ротация товара, поддержание актуального и опрятного вида витрины.</li>
+            <li>Контроль наличия и корректности ценников, POS-материалов.</li>
+            <li>Приём и сдача товара на точке, участие в этом процессе.</li>
+            <li>Отметка товара ценами, штрихкодами и т. д.</li>
+            <li>Фотоотчётность по состоянию точек.</li>
+            <li>Информирование KAM о проблемах на точке — нехватка товара, повреждения, несоответствие выкладки.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>KPI</h4>
+          <ul>
+            <li>Соответствие точек VM-стандартам и гайдлайнам бренда — % проверенных точек.</li>
+            <li>Своевременность и корректность приёмки / сдачи товара и маркировки.</li>
+            <li>Отсутствие расхождений в ценниках и штрихкодах.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Требования</h4>
+          <ul>
+            <li>Опыт в мерчендайзинге от 1 года.</li>
+            <li>Внимательность к деталям, аккуратность.</li>
+            <li>Готовность к разъездной работе по точкам.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Взаимодействует с</h4>
+          <ul>
+            <li>KAM — статус точек, приоритеты, проблемы.</li>
+            <li>Категорийным / бренд-менеджментом — гайдлайны VM и бренд-стандарты.</li>
+            <li>Сейлс-консультантом на точке (модель «самостоятельно») — координация на месте.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+
+    <details class="jd-card" id="jd-sales" style="--c: var(--c-store)">
+      <summary>
+        <svg class="role-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="currentColor"></circle></svg>
+        <span class="jd-dept">Дистрибуция</span>
+        <span class="jd-title">Сейлс-консультант</span>
+        <span class="jd-chev">+</span>
+      </summary>
+      <div class="jd-body">
+        <p class="jd-purpose">Продажи и обслуживание клиентов на точке — только модель «самостоятельно».</p>
+
+        <div class="jd-facts">
+          <div><dt>Департамент</dt><dd>Дистрибуция</dd></div>
+          <div><dt>Подчиняется</dt><dd>Директору департамента дистрибуции</dd></div>
+          <div><dt>Тип роли</dt><dd>Только модель «самостоятельно»</dd></div>
+        </div>
+
+        <div class="jd-block">
+          <h4>Обязанности</h4>
+          <ul>
+            <li>Консультирование покупателей, продажи на точке.</li>
+            <li>Обслуживание кассовых операций.</li>
+            <li>Поддержание порядка, чистоты и стандартов внешнего вида точки.</li>
+            <li>Участие в приёмке товара совместно с VM.</li>
+            <li>Информирование о необходимости пополнения товара.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>KPI</h4>
+          <ul>
+            <li>Выполнение личного плана продаж.</li>
+            <li>Средний чек / конверсия.</li>
+            <li>Соответствие стандартам обслуживания.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Требования</h4>
+          <ul>
+            <li>Опыт в розничных продажах.</li>
+            <li>Коммуникабельность, знание продукта.</li>
+            <li>Опыт работы с кассой — плюс.</li>
+          </ul>
+        </div>
+
+        <div class="jd-block">
+          <h4>Взаимодействует с</h4>
+          <ul>
+            <li>Директор департамента дистрибуции — план продаж, отчётность (основное взаимодействие).</li>
+            <li>VM — выкладка, приёмка товара.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section id="raci" class="raci-section">
+    <h2>RACI-матрица (предложение)</h2>
+
+    <div class="raci-legend">
+      <span><b>R</b> — исполняет</span>
+      <span><b>A</b> — отвечает за результат</span>
+      <span><b>C</b> — консультируют перед решением</span>
+      <span><b>I</b> — информируют по итогу</span>
+      <span>БМ — бренд-менеджер · DP — Demand Planner · SCR — Stock Control &amp; Replenishment · VM — мерчендайзер · СК — сейлс-консультант</span>
+      <span>Клик по роли в шапке — подсветить её зону ответственности</span>
+    </div>
+
+    <div class="raci-scroll">
+      <table class="raci-table">
+        <thead>
+          <tr>
+            <th>Процесс</th>
+            <th class="raci-role" style="--c: var(--c-brand)">БМ</th>
+            <th class="raci-role" style="--c: var(--c-demand)">DP</th>
+            <th class="raci-role" style="--c: var(--c-supply)">SCR</th>
+            <th class="raci-role" style="--c: var(--accent)">KAM</th>
+            <th class="raci-role" style="--c: var(--c-store)">VM</th>
+            <th class="raci-role" style="--c: var(--c-store)">СК</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Ассортиментная политика (ввод / вывод SKU, неликвид)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Ценообразование и маржинальность (стратегия)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Формирование прайс-листа</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Переговоры с брендами-поставщиками</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Позиционирование бренда на рынке</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Поиск и запуск новых брендов</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Маркетинг-план и промо-материалы</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>План закупки на страну (объём, сроки)</td><td class="raci-c">C</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Контроль стока и сроков годности при заказе на страну</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>P&amp;L категории (оборот, маржа, остатки)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Разработка VM-гайдлайнов и бренд-стандартов</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-none">–</td></tr>
+          <tr><td>Расчёт потребности и график отгрузки на точку</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Распределение товара между точками клиента</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Поиск и привлечение новых клиентов</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Коммерческие переговоры и условия с клиентом</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Формирование коммерческого предложения клиенту</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Контроль оплат и дебиторской задолженности</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Документооборот и акты сверки с клиентом</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Отчётность по клиенту (sell-in / sell-out)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Приёмка, списание и маркировка товара на точке</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-c">C</td></tr>
+          <tr><td>Контроль соблюдения VM-стандартов на точке</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-i">I</td></tr>
+          <tr><td>Выкладка и порядок на точке (день в день)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-c">C</td></tr>
+          <tr><td>Продажи и обслуживание клиента на точке (розница)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-a">A/R</td></tr>
+          <tr><td>Организация обучения / тренингов на точке</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  var schemes = document.querySelectorAll('.scheme');
+  if (!('IntersectionObserver' in window)) {
+    schemes.forEach(function (el) { el.classList.add('in-view'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  schemes.forEach(function (el) { io.observe(el); });
+})();
+
+(function () {
+  var table = document.querySelector('.raci-table');
+  if (!table) return;
+  var heads = Array.prototype.slice.call(table.querySelectorAll('thead th.raci-role'));
+  var allRows = Array.prototype.slice.call(table.querySelectorAll('tr'));
+  var activeIndex = null;
+
+  function clearFocus() {
+    table.classList.remove('raci-has-focus');
+    allRows.forEach(function (row) {
+      row.classList.remove('raci-row-owned');
+      Array.prototype.forEach.call(row.children, function (cell) { cell.classList.remove('raci-dim'); });
+    });
+    heads.forEach(function (h) { h.classList.remove('raci-active'); });
+    activeIndex = null;
+  }
+
+  function focusColumn(th) {
+    var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
+    if (activeIndex === idx) { clearFocus(); return; }
+    clearFocus();
+    activeIndex = idx;
+    th.classList.add('raci-active');
+    table.classList.add('raci-has-focus');
+    allRows.forEach(function (row) {
+      var cells = row.children;
+      var cell = cells[idx];
+      Array.prototype.forEach.call(cells, function (c, i) {
+        if (i !== 0 && i !== idx) { c.classList.add('raci-dim'); }
+      });
+      if (cell && (cell.classList.contains('raci-a') || cell.classList.contains('raci-r'))) {
+        row.classList.add('raci-row-owned');
+      }
+    });
+  }
+
+  heads.forEach(function (th) {
+    th.setAttribute('tabindex', '0');
+    th.setAttribute('role', 'button');
+    th.addEventListener('click', function () { focusColumn(th); });
+    th.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); focusColumn(th); }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
