@@ -25,6 +25,7 @@
     --c-supply: #2E6E9E;    /* stock control & replenishment */
     --c-corp: #A6435A;      /* корпоративные продажи */
     --c-store: #5C7A29;     /* VM / сейлс-консультант на точке */
+    --c-wh: #55606B;        /* склад */
 
     --status-bg: #FBF0DB;
     --status-border: #E3B968;
@@ -52,6 +53,7 @@
       --c-supply: #86BDEA;
       --c-corp: #E38FA0;
       --c-store: #A8C97A;
+      --c-wh: #A9B4BE;
 
       --status-bg: #3A2E12;
       --status-border: #8A6A2A;
@@ -75,6 +77,7 @@
     --c-supply: #86BDEA;
     --c-corp: #E38FA0;
     --c-store: #A8C97A;
+    --c-wh: #A9B4BE;
 
     --status-bg: #3A2E12;
     --status-border: #8A6A2A;
@@ -529,6 +532,17 @@
 
   .raci-legend b { color: var(--ink); }
 
+  .raci-scope-note {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    background: var(--status-bg);
+    border: 1px solid var(--status-border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--status-ink);
+    max-width: 68ch;
+  }
+
   .raci-scroll {
     overflow-x: auto;
     border: 1px solid var(--line);
@@ -538,7 +552,7 @@
   .raci-table {
     border-collapse: collapse;
     width: 100%;
-    min-width: 780px;
+    min-width: 880px;
     font-size: 0.84rem;
   }
 
@@ -577,6 +591,7 @@
   .raci-table td:nth-child(5) { --c: var(--accent); }
   .raci-table td:nth-child(6) { --c: var(--c-store); }
   .raci-table td:nth-child(7) { --c: var(--c-store); }
+  .raci-table td:nth-child(8) { --c: var(--c-wh); }
 
   .raci-role {
     color: var(--c);
@@ -608,6 +623,17 @@
   .raci-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--ink) 3%, transparent); }
   .raci-table tbody tr:nth-child(even) td:first-child { background: color-mix(in srgb, var(--ink) 3%, var(--surface)); }
   .raci-table tbody tr.raci-row-owned:nth-child(even) td:first-child { background: color-mix(in srgb, var(--ink) 7%, var(--surface)); }
+
+  .raci-table tr.raci-group td {
+    background: var(--surface-sunk);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-align: left;
+  }
 
   .raci-a { font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 6px; }
   .raci-r { font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 6px; }
@@ -1337,7 +1363,7 @@
       <span><b>A</b> — отвечает за результат</span>
       <span><b>C</b> — консультируют перед решением</span>
       <span><b>I</b> — информируют по итогу</span>
-      <span>БМ — бренд-менеджер · DP — Demand Planner · SCR — Stock Control &amp; Replenishment · VM — мерчендайзер · СК — сейлс-консультант</span>
+      <span>БМ — бренд-менеджер · DP — Demand Planner · SCR — Stock Control &amp; Replenishment · VM — мерчендайзер · СК — сейлс-консультант · СКЛ — склад</span>
       <span>Клик по роли в шапке — подсветить её зону ответственности</span>
     </div>
 
@@ -1352,36 +1378,60 @@
             <th class="raci-role" style="--c: var(--accent)">KAM</th>
             <th class="raci-role" style="--c: var(--c-store)">VM</th>
             <th class="raci-role" style="--c: var(--c-store)">СК</th>
+            <th class="raci-role" style="--c: var(--c-wh)">СКЛ</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>Ассортиментная политика (ввод / вывод SKU, неликвид)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Ценообразование и маржинальность (стратегия)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Формирование прайс-листа</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Переговоры с брендами-поставщиками</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Позиционирование бренда на рынке</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Поиск и запуск новых брендов</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Маркетинг-план и промо-материалы</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>План закупки на страну (объём, сроки)</td><td class="raci-c">C</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Контроль стока и сроков годности при заказе на страну</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>P&amp;L категории (оборот, маржа, остатки)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Разработка VM-гайдлайнов и бренд-стандартов</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-none">–</td></tr>
-          <tr><td>Расчёт потребности и график отгрузки на точку</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Распределение товара между точками клиента</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Поиск и привлечение новых клиентов</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Коммерческие переговоры и условия с клиентом</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Формирование коммерческого предложения клиенту</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Контроль оплат и дебиторской задолженности</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Документооборот и акты сверки с клиентом</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Отчётность по клиенту (sell-in / sell-out)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
-          <tr><td>Приёмка, списание и маркировка товара на точке</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-c">C</td></tr>
-          <tr><td>Контроль соблюдения VM-стандартов на точке</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-i">I</td></tr>
-          <tr><td>Выкладка и порядок на точке (день в день)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-c">C</td></tr>
-          <tr><td>Продажи и обслуживание клиента на точке (розница)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-a">A/R</td></tr>
-          <tr><td>Организация обучения / тренингов на точке</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr class="raci-group"><td colspan="8">Категория и бренд</td></tr>
+          <tr><td>Ассортиментная политика (ввод / вывод SKU, неликвид)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Ценообразование и маржинальность (стратегия)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Формирование прайс-листа</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Переговоры с брендами-поставщиками</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Позиционирование бренда на рынке</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Поиск и запуск новых брендов</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Маркетинг-план и промо-материалы</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>P&amp;L категории (оборот, маржа, остатки)</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Разработка VM-гайдлайнов и бренд-стандартов</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+
+          <tr class="raci-group"><td colspan="8">Планирование закупки</td></tr>
+          <tr><td>План закупки на страну (объём, сроки)</td><td class="raci-c">C</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Контроль стока и сроков годности при заказе на страну</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Расчёт потребности и график отгрузки на точку</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Распределение товара между точками клиента</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+
+          <tr class="raci-group"><td colspan="8">Склад</td></tr>
+          <tr><td>Доставка товара</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td></tr>
+          <tr><td>Сдача товара на точку представителям партнёра</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td></tr>
+          <tr><td>Трансфер товара в системе на виртуальный склад</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td></tr>
+          <tr><td>Контроль фактических и системных баркодов</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td></tr>
+
+          <tr class="raci-group"><td colspan="8">Открытие новой точки продаж</td></tr>
+          <tr><td>Анализ потенциала рынка / локации</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Внесение предложения по открытию точки</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Поиск и привлечение клиента / партнёра</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Коммерческие переговоры и условия</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Подготовка и запуск точки (открытие)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+
+          <tr class="raci-group"><td colspan="8">Ведение клиента</td></tr>
+          <tr><td>Формирование коммерческого предложения клиенту</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Контроль оплат и дебиторской задолженности</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Документооборот и акты сверки с клиентом</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Отчётность по клиенту (sell-in / sell-out)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+          <tr><td>Списание товаров с виртуального склада по системе (оформление продаж)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td></tr>
+          <tr><td>Контроль выставления счетов клиенту</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
+
+          <tr class="raci-group"><td colspan="8">Точка продаж — операционка</td></tr>
+          <tr><td>Приёмка товара на точке</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-c">C</td><td class="raci-none">–</td></tr>
+          <tr><td>Маркировка товара на точке</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td></tr>
+          <tr><td>Контроль соблюдения VM-стандартов на точке</td><td class="raci-i">I</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-i">I</td><td class="raci-a">A/R</td><td class="raci-i">I</td><td class="raci-none">–</td></tr>
+          <tr><td>Выкладка и порядок на точке (день в день)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-c">C</td><td class="raci-none">–</td></tr>
+          <tr><td>Продажи и обслуживание клиента на точке (розница)</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td></tr>
+          <tr><td>Организация обучения / тренингов на точке</td><td class="raci-c">C</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-a">A/R</td><td class="raci-none">–</td><td class="raci-none">–</td><td class="raci-none">–</td></tr>
         </tbody>
       </table>
     </div>
+
+    <p class="raci-scope-note">RACI актуален для работы дистрибуции по сценарию «Самостоятельно». Для сценария «Через партнёра» нужны корректировки — без учёта роли сейлс-консультанта (в этой модели точку ведёт персонал партнёра).</p>
   </section>
 
 </div>
